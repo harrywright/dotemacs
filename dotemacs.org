@@ -1,0 +1,105 @@
+#+TITLE: DotEmacs
+#+AUTHOR: Harry Wright
+
+#+BEGIN_SRC emacs-lisp
+(when (>= emacs-major-version 24)
+  (setq-default
+   load-prefer-newer t
+   package-enable-at-startup nil)
+  (package-initialize)
+  (add-to-list 'package-archives '("melpa" . "http://melpa.org/packages/") t)
+  (unless (package-installed-p 'delight)
+    (package-refresh-contents)
+    (package-install 'delight))
+  (unless (package-installed-p 'use-package)
+    (package-refresh-contents)
+    (package-install 'use-package)))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package doom-themes
+    :ensure t
+    :config
+    (doom-themes-visual-bell-config)
+    (doom-themes-org-config)
+    (load-theme 'doom-nord t))
+
+  (use-package doom-modeline
+    :ensure t
+    :hook (after-init . doom-modeline-mode)
+    :custom
+    (inhibit-compacting-font-caches t)
+    (doom-modeline-minor-modes t)
+    (doom-modeline-icon t)
+    (doom-modeline-major-mode-color-icon t)
+    (doom-modeline-height 15))
+#+END_SRC
+
+
+
+When emacs is started in daemon mode, there are no frames. This prevents 
+themes from being applied properly.
+
+This code from Stack Overflow
+https://stackoverflow.com/questions/18904529
+ensures that it will start correctly in GUI and Terminal.
+
+#+BEGIN_SRC emacs-lisp
+  (defvar my:theme 'doom-nord)
+  (defvar my:theme-window-loaded nil)
+  (defvar my:theme-terminal-loaded nil)
+
+  (if (daemonp)
+      (add-hook 'after-make-frame-functions(lambda (frame)
+					     (select-frame frame)
+					     (if (window-system frame)
+						 (unless my:theme-window-loaded
+						   (if my:theme-terminal-loaded
+						       (enable-theme my:theme)
+						     (load-theme my:theme t))
+						   (setq my:theme-window-loaded t))
+					       (unless my:theme-terminal-loaded
+						 (if my:theme-window-loaded
+						     (enable-theme my:theme)
+			       (load-theme my:theme t))
+						 (setq my:theme-terminal-loaded t)))))
+  
+    (progn
+      (load-theme my:theme t)
+      (if (display-graphic-p)
+	  (setq my:theme-window-loaded t)
+	(setq my:theme-terminal-loaded t))))
+#+END_SRC
+
+
+
+#+BEGIN_SRC emacs-lisp
+(use-package neotree
+  :ensure t
+  :bind (([f8] . neotree-toggle))
+  :config (setq neo-autorefresh t))
+#+END_SRC
+
+
+#+BEGIN_SRC emacs-lisp
+(use-package projectile
+  :defer 1
+  :init
+  (setq-default projectile-keymap-prefix (kbd "C-c C-p"))
+  :config
+  (projectile-global-mode)
+  (setq-default
+   projectile-cache-file (expand-file-name ".projectile.cache" user-emacs-directory)
+   projectile-completion-system 'helm
+   projectile-enable-caching t
+   projectile-known-projects-file
+   (expand-file-name ".projectile-bookmarks.eld" user-emacs-directory)
+   projectile-mode-line '(:eval (projectile-project-name))))
+#+END_SRC
+
+#+BEGIN_SRC emacs-lisp
+  (use-package dashboard
+    :ensure t
+    :config
+    (dashboard-setup-startup-hook))
+#+END_SRC
