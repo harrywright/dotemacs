@@ -1,5 +1,13 @@
-*.swp
-dotemacs.el
+auto-save-list/
 elpa/
+transient/
+
+*.swp
 *~
+
+dotemacs.el
 recentf
+
+.custom.el
+.secret.el
+
